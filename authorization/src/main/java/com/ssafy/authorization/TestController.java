@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 // @RequestMapping("test")
 public class TestController {
 	@GetMapping("/temp")
-	public String temp() {
+	public String temp(Model model) {
+
+
 		return "temp";
 	}
 
@@ -19,5 +21,6 @@ public class TestController {
 		// emailService.sendEmail("kdn1030@naver.com");
 		return "register";
 	}
+
 }
 
