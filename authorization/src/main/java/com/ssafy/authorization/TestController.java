@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 // @RequestMapping("test")
 public class TestController {
-	@GetMapping("/temp")
-	public String temp(Model model) {
-
-
-		return "temp";
-	}
+	// @GetMapping("/temp")
+	// public String temp(Model model) {
+	//
+	//
+	// 	return "temp";
+	// }
 
 
 	@GetMapping("/signup")
