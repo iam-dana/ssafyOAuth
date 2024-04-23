@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Real-time System Metrics</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #333;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .chart-container {
+            width: 50%; /* Adjusted for better aspect ratio */
+            margin: 20px;
+            height: 600px; /* Increased height */
+            position: relative;
+        }
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Real-Time System Metrics</h1>
+    <div class="chart-container" onclick="toggleGraph('cpu')">
+        <canvas id="cpuChart"></canvas>
+    </div>
+    <div class="chart-container" onclick="toggleGraph('memory')">
+        <canvas id="memoryChart"></canvas>
+    </div>
+    <script>
+        var cpuChart, memoryChart;
+        var cpuData = [], memoryData = [];
+        var maxDataPoints = 30; // Maximum number of data points for line graphs
+        var socket = new SockJS('http://localhost:8080/ws');
+        var stompClient = Stomp.over(socket);
+        stompClient.connect({}, function(frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/metrics', function(message) {
+                var metrics = JSON.parse(message.body);
+                updateCharts(metrics);
+            });
+        });
+
+        Chart.defaults.color = '#fff'; // Default font color
+        Chart.defaults.font.family = 'Arial'; // Default font family
+        Chart.defaults.font.size = 14; // Default font size
+
+        // Chart.js plugin to render text in the center of the donut
+        Chart.pluginService.register({
+            beforeDraw: function(chart) {
+                if (chart.config.options.elements && chart.config.options.elements.center) {
+                    const ctx = chart.chart.ctx;
+                    const centerConfig = chart.config.options.elements.center;
+                    const fontStyle = centerConfig.fontStyle || 'Arial';
+                    const txt = centerConfig.text;
+                    const color = centerConfig.color || '#FFF';
+                    const maxFontSize = centerConfig.maxFontSize || 75;
+                    const sidePadding = centerConfig.sidePadding || 20;
+                    const sidePaddingCalculated = (sidePadding / 100) * (chart.innerRadius * 2);
+                    ctx.font = `${maxFontSize}px ${fontStyle}`;
+                    ctx.fillStyle = color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const centerX = (chart.chartArea.left + chart.chartArea.right) / 2;
+                    const centerY = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+                    ctx.fillText(txt, centerX, centerY);
+                }
+            }
+        });
+
+        // WebSocket connection and subscription
+        var socket = new SockJS('http://localhost:8080/ws');
+        var stompClient = Stomp.over(socket);
+        stompClient.connect({}, function(frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/metrics', function(message) {
+                var metrics = JSON.parse(message.body);
+                updateCharts(metrics);
+            });
+        });
+
+        // Toggle Graph between Donut and Line
+        function toggleGraph(metricType) {
+            const chart = metricType === 'cpu' ? cpuChart : memoryChart;
+            const data = metricType === 'cpu' ? cpuData : memoryData;
+            const canvasId = metricType === 'cpu' ? 'cpuChart' : 'memoryChart';
+
+            if (chart.config.type === 'doughnut') {
+                chart.destroy();
+                window[metricType + 'Chart'] = createLineChart(document.getElementById(canvasId), data, metricType.toUpperCase());
+            } else {
+                chart.destroy();
+                window[metricType + 'Chart'] = createDonutChart(document.getElementById(canvasId), data[data.length - 1], metricType.toUpperCase());
+            }
+        }
+
+        // Create Donut Chart
+        function createDonutChart(canvas, data, label) {
+            return new Chart(canvas, {
+                type: 'doughnut',
+                data: {
+                    labels: [label, 'Free'],
+                    datasets: [{
+                        data: [data, 100 - data],
+                        backgroundColor: ['#FF6384', '#AAAAAA'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: {
+                        center: {
+                            text: data.toFixed(2) + '%',
+                            color: '#FFF', // Text color
+                            fontStyle: 'Arial', // Font style
+                            sidePadding: 20 // Padding
+                        }
+                    },
+                    cutoutPercentage: 80
+                }
+            });
+        }
+
+        // Create Line Chart
+        function createLineChart(canvas, data, label) {
+            return new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: data.map((_, i) => i + 1),
+                    datasets: [{
+                        label: label + ' Usage',
+                        data: data,
+                        backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                        borderColor: 'rgb(0, 123, 255)',
+                        borderWidth: 1,
+                        pointRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update Charts with Real-time Data
+        function updateCharts(metrics) {
+            // Update CPU data and chart
+            cpuData.push(metrics.cpuLoad);
+            if (cpuData.length > maxDataPoints) cpuData.shift(); // Remove oldest data point
+            if (!cpuChart) {
+                cpuChart = createDonutChart(document.getElementById('cpuChart'), metrics.cpuLoad, 'CPU');
+            } else {
+                updateChartData(cpuChart, metrics.cpuLoad);
+            }
+
+            // Update Memory data and chart
+            memoryData.push(metrics.memoryUsage);
+            if (memoryData.length > maxDataPoints) memoryData.shift(); // Remove oldest data point
+            if (!memoryChart) {
+                memoryChart = createDonutChart(document.getElementById('memoryChart'), metrics.memoryUsage, 'Memory');
+            } else {
+                updateChartData(memoryChart, metrics.memoryUsage);
+            }
+        }
+
+        // Update individual chart's data
+        function updateChartData(chart, newData) {
+            if (chart.config.type === 'doughnut') {
+                chart.data.datasets[0].data[0] = newData;
+                chart.data.datasets[0].data[1] = 100 - newData;
+                chart.options.elements.center.text = newData.toFixed(2) + '%';
+            } else {
+                chart.data.labels.push(chart.data.labels.length + 1);
+                chart.data.datasets[0].data.push(newData);
+                if (chart.data.labels.length > maxDataPoints) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[0].data.shift();
+                }
+            }
+            chart.update();
+        }
+
+        // Initial chart setup
+        document.addEventListener('DOMContentLoaded', function() {
+            cpuChart = createDonutChart(document.getElementById('cpuChart'), 0, 'CPU');
+            memoryChart = createDonutChart(document.getElementById('memoryChart'), 0, 'Memory');
+        });
+    </script>
+</body>
+</html>
