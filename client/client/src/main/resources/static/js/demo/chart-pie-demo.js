@@ -3,8 +3,8 @@ Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,Bli
 Chart.defaults.global.defaultFontColor = '#858796';
 
 // Pie Chart Example
-var ctx = document.getElementById("myPieChart");
-var myPieChart = new Chart(ctx, {
+const ctx = document.getElementById("myPieChart");
+const myPieChart = new Chart(ctx, {
   type: 'doughnut',
   data: {
     labels: ["Direct", "Referral", "Social"],
@@ -33,3 +33,23 @@ var myPieChart = new Chart(ctx, {
     cutoutPercentage: 80,
   },
 });
+
+function getCookie(name) {
+  var cookies = document.cookie.split(';');
+  for (var i = 0; i < cookies.length; i++) {
+    var cookie = cookies[i];
+    while (cookie.charAt(0) === ' ') {
+      cookie = cookie.substring(1);
+    }
+    if (cookie.indexOf(name + "=") === 0) {
+      return cookie.substring(name.length + 1, cookie.length);
+    }
+  }
+  // 해당 이름의 쿠키가 없으면 undefined 반환
+  return undefined;
+}
+
+window.onload = function () {
+  loadData();
+  loadTeams();
+};

@@ -25,8 +25,8 @@ function number_format(number, decimals, dec_point, thousands_sep) {
 }
 
 // Area Chart Example
-var ctx = document.getElementById("myAreaChart");
-var myLineChart = new Chart(ctx, {
+let ctx = document.getElementById("myAreaChart");
+let myLineChart = new Chart(ctx, {
   type: 'line',
   data: {
     labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
@@ -123,3 +123,23 @@ function updateChartData() {
 
 // Update chart every second
 setInterval(updateChartData, 1000);
+
+function getCookie(name) {
+  var cookies = document.cookie.split(';');
+  for (var i = 0; i < cookies.length; i++) {
+    var cookie = cookies[i];
+    while (cookie.charAt(0) === ' ') {
+      cookie = cookie.substring(1);
+    }
+    if (cookie.indexOf(name + "=") === 0) {
+      return cookie.substring(name.length + 1, cookie.length);
+    }
+  }
+  // 해당 이름의 쿠키가 없으면 undefined 반환
+  return undefined;
+}
+
+window.onload = function () {
+  loadData();
+  loadTeams();
+};
