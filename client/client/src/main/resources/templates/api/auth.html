@@ -7,7 +7,28 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <title>SSAFY Auth - 독스 auth</title>
-
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .code-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .code-title {
+            background-color: #e9ecef;
+            padding: 0.5rem;
+            font-weight: bold;
+        }
+        .code-content {
+            background-color: #fff;
+            padding: 1rem;
+            border-top: 1px solid #dee2e6;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+    </style>
     <!-- Custom fonts for this template-->
     <link th:href="@{/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
     <link th:href="@{https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i}"
@@ -177,6 +198,15 @@
             <div class="card-body p-0">
                 <div class="col">
                     <h1>SSAFY OAUTH</h1>
+                    <div class="introduce">
+                        <h2>목차</h2>
+                        - 1. 기능 소개
+                        - 2. 싸피어스 로그인
+                        - 3. 토큰
+                        - 4. Oauth 2.0 과정
+                        - 5. API 목록
+                        - 6. 리퀘스트 별 요청 내용
+                    </div>
                     <div class="api-section">
                         <h2>이해하기</h2>
                         <div class="api-description">
@@ -307,14 +337,282 @@
                                 </tbody>
                             </table>
                         </div>
-
+                        <hr>
+                        <h2>Oauth 2.0 과정 이해</h2>
                         <div class="process">
-                            <img src="/image/code.PNG" width="100%">
-                            <img src="/image/token.PNG" width="100%">
-                            <img src="/image/userInfo.PNG" width="100%">
-                            1. 싸피어스 로그인
+
+                            <div class="process-1">
+                                <h3>코드 교환 </h3>
+                                <img src="/image/code.PNG" class="img-fluid mt-3 mb-3" alt="Code Image">
+                                <p>
+                                    1. 사용자가 SSAFY AUTH로 로그인 요청을 할 경우, SSAFY authorization server로 페이지를 요청합니다. <br>
+                                    2. request param 데이터가 올바를 경우 로그인페이지를 사용자에게 반환합니다. <br>
+                                    3. 사용자가 아이디 패스워드로 로그인 요청을 authorzation server로 보냅니다. <br>
+                                    4. 해당 클라이언트의 scopes 를 확인 한 후 동의하지 않은 scopes가 존재한다면 동의페이지를 반환합니다. <br>
+                                    5. 사용자가 동의 항목을 체크할 경우 서버에 등록한 redirect_uri로 code 파라미터를 가지고 redirect 합니다. <br>
+
+                                </p>
+                            </div>
+
+                            <div class="process-2">
+                                <h3>토큰 교환</h3>
+                                <img src="/image/token.PNG" class="img-fluid mt-3 mb-3" alt="Token Image">
+                                <p>
+                                    1. 사용자가 받은 code 값으로 서버에 토큰을 요청합니다. <br>
+                                    2. 올바른 code 값일 경우 서버로부터 사용자에게 토큰을 전달합니다.
+                                </p>
+                            </div>
+
+                            <div class="process-3">
+                                <img src="/image/userInfo.PNG" class="img-fluid mt-3 mb-3" alt="User Info Image">
+                                <p>
+                                    1. 사용자가 받은 token 값으로 유저정보를 리소스 서버에게 요청합니다. <br>
+                                    2. 올바른 토큰일 경우 사용자의 정보를 반환합니다. <br>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="api-list">
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>URL</th>
+                                    <th>호스트</th>
+                                    <th>메서드</th>
+                                    <th>기능</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>/oauth2/authorize</td>
+                                    <td>
+                                        https://ssafyauth-authorization.duckdns.org
+                                    </td>
+                                    <td>GET</td>
+                                    <td>
+                                        <a href="#code-part"> 인가코드 받기</a>
+                                        <a href="#consent-part">동의 항목</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>/oauth2/token</td>
+                                    <td>
+                                        https://ssafyauth-authorization.duckdns.org
+                                    </td>
+                                    <td>POST</td>
+                                    <td>
+                                        <a href="#token-part">토큰 받기</a>
+                                        <a href="#refresh-part">토큰 갱신하기</a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>/user/info</td>
+                                    <td>
+                                        https://ssafyauth-resource.duckdns.org
+                                    </td>
+                                    <td>GET</td>
+                                    <td>
+                                        <a href="#user-info-part">사용자 정보 가져오기</a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>/oauth2/jwks</td>
+                                    <td>
+                                        https://ssafyauth-authorization.duckdns.org
+                                    </td>
+                                    <td>GET</td>
+                                    <td>
+                                        <a href="#open-key-oidc-part">OIDC 공개키 조회</a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>/.well-known/oauth-authorization-server</td>
+                                    <td>
+                                        https://ssafyauth-authorization.duckdns.org
+                                    </td>
+                                    <td>GET</td>
+                                    <td>
+                                        <a href="#metadata-oidc-part">OIDC 메타데이터 확인하기</a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>/auth2/userinfo</td>
+                                    <td>
+                                        https://ssafyauth-authorization.duckdns.org
+                                    </td>
+                                    <td>GET</td>
+                                    <td>
+                                        <a href="#user-info-oidc-part">OIDC 사용자 정보 가져오기</a>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
+                    <div id="code-part" class="code-part">
+                        <div class="container my-4">
+                            <h4>요청</h4>
+                            <div class="table-container">
+                                <table class="table table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th>이름</th>
+                                        <th>타입</th>
+                                        <th>설명</th>
+                                        <th>필수</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td>client_id</td>
+                                        <td>8비트 문자열</td>
+                                        <td>앱 REST API 키</td>
+                                        <td>O</td>
+                                    </tr>
+                                    <tr>
+                                        <td>redirect_uri</td>
+                                        <td>8비트 문자열</td>
+                                        <td>인가 코드 전달받을 서비스 서버 URI</td>
+                                        <td>O</td>
+                                    </tr>
+                                    <tr>
+                                        <td>response_type</td>
+                                        <td>8비트 문자열</td>
+                                        <td>code로 고정</td>
+                                        <td>O</td>
+                                    </tr>
+                                    <tr>
+                                        <td>scope</td>
+                                        <td>8비트 문자열</td>
+                                        <td>추가 동의 항목 필드값</td>
+                                        <td>X</td>
+                                    </tr>
+                                    <tr>
+                                        <td>prompt</td>
+                                        <td>8비트 문자열</td>
+                                        <td>동의 화면 요청 시 사용자 동작 제어</td>
+                                        <td>X</td>
+                                    </tr>
+                                    <tr>
+                                        <td>login_hint</td>
+                                        <td>8비트 문자열</td>
+                                        <td>로그인 힌트 주기 위한 시 사용</td>
+                                        <td>X</td>
+                                    </tr>
+                                    <tr>
+                                        <td>service_terms</td>
+                                        <td>8비트 문자열</td>
+                                        <td>서비스 약관 동의 받기 시 사용</td>
+                                        <td>X</td>
+                                    </tr>
+                                    <tr>
+                                        <td>state</td>
+                                        <td>8비트 문자열</td>
+                                        <td>인가 코드 전달 시 임의 값</td>
+                                        <td>X</td>
+                                    </tr>
+                                    <tr>
+                                        <td>nonce</td>
+                                        <td>8비트 문자열</td>
+                                        <td>OpenID Connect에서 토큰 재생 공격 방지</td>
+                                        <td>X</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <h3>응답</h3>
+                            <div class="table-container">
+                                <table class="table table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th>이름</th>
+                                        <th>타입</th>
+                                        <th>설명</th>
+                                        <th>필수</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td>code</td>
+                                        <td>8비트 문자열</td>
+                                        <td>로그인 성공 시 인가 코드</td>
+                                        <td>O</td>
+                                    </tr>
+                                    <tr>
+                                        <td>error</td>
+                                        <td>8비트 문자열</td>
+                                        <td>인증 실패 시 반환되는 에러 코드</td>
+                                        <td>X</td>
+                                    </tr>
+                                    <tr>
+                                        <td>error_description</td>
+                                        <td>8비트 문자열</td>
+                                        <td>인증 실패 시 반환되는 에러 설명</td>
+                                        <td>X</td>
+                                    </tr>
+                                    <tr>
+                                        <td>state</td>
+                                        <td>8비트 문자열</td>
+                                        <td>요청 시 전달한 state 값</td>
+                                        <td>X</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <h3>예제</h3>
+                            <div class="code-box">
+                                <div class="code-title">요청</div>
+                                <div class="code-content">
+                                    <code>https://kauth.kakao.com/oauth/authorize?response_type=code&amp;client_id={REST_API_KEY}&amp;redirect_uri={REDIRECT_URI}</code>
+                                </div>
+                            </div>
+                            <div class="code-box">
+                                <div class="code-title">응답: 사용자 인증 (동의하고 계속하기) 선택, 로그인 성공</div>
+                                <div class="code-content">
+                                    <code>
+                                        HTTP/1.1 302 Found<br>
+                                        Content-Length: 0<br>
+                                        Location: {REDIRECT_URI}?code={AUTHORIZE_CODE}
+                                    </code>
+                                </div>
+                            </div>
+                            <div class="code-box">
+                                <div class="code-title">응답: 로그인 취소</div>
+                                <div class="code-content">
+                                    <code>
+                                        HTTP/1.1 302 Found<br>
+                                        Content-Length: 0<br>
+                                        Location: {REDIRECT_URI}?error=access_denied&amp;error_description=User+denied+access
+                                    </code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="consent-part">
+
+                    </div>
+                    <div id="token-part" class="token-part">
+
+                    </div>
+                    <div id="refresh-part" class="refresh-part">
+
+                    </div>
+                    <div id="user-info-part" class="user-info-part">
+
+                    </div>
+                    <div id="open-key-oidc-part" class="open-key-oidc-part">
+
+                    </div>
+                    <div id="metadata-oidc-part" class="metadata-oidc-part">
+
+                    </div>
+                    <div id="user-info-oidc-part" class="user-info-oidc-part">
+
+                    </div>
+
                 </div>
             </div>
         </div>
