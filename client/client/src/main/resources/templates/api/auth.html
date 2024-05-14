@@ -184,7 +184,7 @@
                         </div>
                         <br>
                         <hr>
-                        <div class="endpoint">
+                        <div class="introduce">
                             <h3>기능소개</h3>
                             <div class="request">
                                 싸피어스 로그인은 싸피어스계정으로 다양한 서비스에 로그인할 수 있도록 하는 소셜 로그인 서비스입니다.
@@ -237,6 +237,7 @@
 
 
                             </div>
+
                             <table class="table table-bordered">
                                 <thead>
                                 <tr>
@@ -248,23 +249,71 @@
                                 <tr>
                                     <td>인증(Authentication)</td>
                                     <td>
-                                        ID와 비밀번호로 사용자 신원을 확인 <br>
-                                        각 서비스에 사용자가 싸피어스계정으로 로그인할 수 있는 기능 지원 <br>
-                                        참고: OpenID Connect 지원, 로그인 세션 대신 사용 가능한 ID 토큰 제공 가능
+                                        사용자 인증, 싸피어스 API 호출 권한 부여
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>인가(Authorization)</td>
                                     <td>
-                                        사용자 개인정보와 같은 자원(Resource)에 대한 접근 권한 획득 <br>
-                                        사용자 동의를 바탕으로 사용자 정보나 기능에 대한 접근 권한을 토큰 형태로 서비스에 부여
+                                        액세스 토큰 재발급에 사용 <br>
+                                        유효한 리프레시 토큰이 있다면 사용자가 매번 싸피어스 정보를 입력하는 인증 절차를 거치지 않아도 액세스 토큰 재발급 가능
                                     </td>
+                                    <td></td>
                                 </tr>
                                 </tbody>
                             </table>
-                    </div>
 
 
+                            <h4>토큰</h4>
+                            <p>
+                                토큰은 사용자의 싸피어스 로그인 인증 및 인가 정보를 담은 권한 증명으로, 싸피어스 API 호출에 사용됩니다. <br>
+                                싸피어스 로그인은 OAuth 2.0 표준 규격에 따라 액세스 토큰(Access token), 리프레시 토큰(Refresh token) 두 종류의 토큰을 발급합니다.  <br>
+                                OpenID Connect 사용 시, 사용자 인증 정보를 담은 ID 토큰을 함께 발급합니다. 각 토큰의 역할과 만료 시간을 표로 정리하면 다음과 같습니다.
+                            </p>
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>구분</th>
+                                    <th>설명</th>
+                                    <th>만료 시간</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>액세스 토큰 (Access token)</td>
+                                    <td>
+                                        ID와 비밀번호로 사용자 신원을 확인 <br>
+                                        각 서비스에 사용자가 싸피어스계정으로 로그인할 수 있는 기능 지원 <br>
+                                        참고: OpenID Connect 지원, 로그인 세션 대신 사용 가능한 ID 토큰 제공 가능
+                                    </td>
+                                    <td>60분</td>
+                                </tr>
+                                <tr>
+                                    <td>리프레시 토큰 (Refresh token)</td>
+                                    <td>
+                                        사용자 개인정보와 같은 자원(Resource)에 대한 접근 권한 획득 <br>
+                                        사용자 동의를 바탕으로 사용자 정보나 기능에 대한 접근 권한을 토큰 형태로 서비스에 부여
+                                    </td>
+                                    <td>10일</td>
+                                </tr>
+
+                                <tr>
+                                    <td>ID 토큰 (ID token)</td>
+                                    <td>
+                                        싸피어스 로그인 사용자의 인증 정보를 제공하는 토큰
+                                    </td>
+                                    <td>엑세스 토큰과 동일</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="process">
+                            <img src="/image/code.PNG" width="100%">
+                            <img src="/image/token.PNG" width="100%">
+                            <img src="/image/userInfo.PNG" width="100%">
+                            1. 싸피어스 로그인
+                        </div>
                     </div>
                 </div>
             </div>
