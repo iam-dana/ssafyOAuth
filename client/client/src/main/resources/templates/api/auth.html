@@ -454,13 +454,13 @@
                     </div>
                     <div id="code-part" class="code-part">
                         <div class="container my-4">
+                            <h2> 인가코드 받기</h2>
                             <h4>요청</h4>
                             <div class="table-container">
                                 <table class="table table-bordered">
                                     <thead>
                                     <tr>
                                         <th>이름</th>
-                                        <th>타입</th>
                                         <th>설명</th>
                                         <th>필수</th>
                                     </tr>
@@ -468,68 +468,37 @@
                                     <tbody>
                                     <tr>
                                         <td>client_id</td>
-                                        <td>8비트 문자열</td>
-                                        <td>앱 REST API 키</td>
+                                        <td>발급받은 클라이언트 아이디</td>
                                         <td>O</td>
                                     </tr>
                                     <tr>
                                         <td>redirect_uri</td>
-                                        <td>8비트 문자열</td>
-                                        <td>인가 코드 전달받을 서비스 서버 URI</td>
+                                        <td>인가 코드 전달받을 서비스 서버 URI (예 : http://localhost:8080/oauth2/authorzie)</td>
                                         <td>O</td>
                                     </tr>
                                     <tr>
                                         <td>response_type</td>
-                                        <td>8비트 문자열</td>
-                                        <td>code로 고정</td>
+                                        <td>code, credentials (authorization-grant-type)</td>
                                         <td>O</td>
                                     </tr>
-                                    <tr>
-                                        <td>scope</td>
-                                        <td>8비트 문자열</td>
-                                        <td>추가 동의 항목 필드값</td>
+                                        <td>선택 scope</td>
+                                        <td> studentId, name,track, phoneNumber, gender</td>
                                         <td>X</td>
                                     </tr>
                                     <tr>
-                                        <td>prompt</td>
-                                        <td>8비트 문자열</td>
-                                        <td>동의 화면 요청 시 사용자 동작 제어</td>
-                                        <td>X</td>
-                                    </tr>
-                                    <tr>
-                                        <td>login_hint</td>
-                                        <td>8비트 문자열</td>
-                                        <td>로그인 힌트 주기 위한 시 사용</td>
-                                        <td>X</td>
-                                    </tr>
-                                    <tr>
-                                        <td>service_terms</td>
-                                        <td>8비트 문자열</td>
-                                        <td>서비스 약관 동의 받기 시 사용</td>
-                                        <td>X</td>
-                                    </tr>
-                                    <tr>
-                                        <td>state</td>
-                                        <td>8비트 문자열</td>
-                                        <td>인가 코드 전달 시 임의 값</td>
-                                        <td>X</td>
-                                    </tr>
-                                    <tr>
-                                        <td>nonce</td>
-                                        <td>8비트 문자열</td>
-                                        <td>OpenID Connect에서 토큰 재생 공격 방지</td>
+                                        <td>필수 scope</td>
+                                        <td> openId 사용시 (openid)/ 기본 email, image </td>
                                         <td>X</td>
                                     </tr>
                                     </tbody>
                                 </table>
                             </div>
-                            <h3>응답</h3>
+                            <h4>응답</h4>
                             <div class="table-container">
                                 <table class="table table-bordered">
                                     <thead>
                                     <tr>
                                         <th>이름</th>
-                                        <th>타입</th>
                                         <th>설명</th>
                                         <th>필수</th>
                                     </tr>
@@ -537,36 +506,27 @@
                                     <tbody>
                                     <tr>
                                         <td>code</td>
-                                        <td>8비트 문자열</td>
                                         <td>로그인 성공 시 인가 코드</td>
                                         <td>O</td>
                                     </tr>
                                     <tr>
                                         <td>error</td>
-                                        <td>8비트 문자열</td>
                                         <td>인증 실패 시 반환되는 에러 코드</td>
                                         <td>X</td>
                                     </tr>
                                     <tr>
                                         <td>error_description</td>
-                                        <td>8비트 문자열</td>
                                         <td>인증 실패 시 반환되는 에러 설명</td>
-                                        <td>X</td>
-                                    </tr>
-                                    <tr>
-                                        <td>state</td>
-                                        <td>8비트 문자열</td>
-                                        <td>요청 시 전달한 state 값</td>
                                         <td>X</td>
                                     </tr>
                                     </tbody>
                                 </table>
                             </div>
-                            <h3>예제</h3>
+                            <h4>예제</h4>
                             <div class="code-box">
                                 <div class="code-title">요청</div>
                                 <div class="code-content">
-                                    <code>https://kauth.kakao.com/oauth/authorize?response_type=code&amp;client_id={REST_API_KEY}&amp;redirect_uri={REDIRECT_URI}</code>
+                                    <code>https://ssafyauth-authorization.duckdns.org/oauth2/authorize?response_type=code&amp;client_id={CLIENT_ID}&amp;redirect_uri={REDIRECT_URI}&grant_type={CODE}</code>
                                 </div>
                             </div>
                             <div class="code-box">
