@@ -1,5 +1,8 @@
 package com.ssafy.client.user.controller;
 
+import java.util.Map;
+
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +13,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.client.user.dto.ProfileInformationForUpdatesDto;
 import com.ssafy.client.user.service.ApiService;
+import com.ssafy.client.user.service.TokenService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +26,13 @@ public class UserPageController {
 	private final ObjectMapper objectMapper;
 	private final String RESOURCES_URL = "https://ssafyauth-resource.duckdns.org";
 	private final String Authorization_URL = "https://ssafyauth-authoriaztion.duckdns.org/";
+
+
+	@GetMapping("/user/sign-up")
+	public String signUp(){
+		return "user/sign_up";
+	}
+
 	@GetMapping("/user/update")
 	public String updateUserPage(Model model) {
 		try {
