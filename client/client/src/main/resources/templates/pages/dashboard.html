@@ -92,7 +92,7 @@
         function loadAbnormalLoginCount(teamSeq) {
             var token = getCookie("access_token")
             $.ajax({
-                url: 'http://localhost:8090/api/team/'+teamSeq+'/abnormal-login',
+                url: 'https://ssafyauth-resource.duckdns.org/api/team/'+teamSeq+'/abnormal-login',
                 type: 'GET',
                 contentType: 'application/json',
                 headers: {
