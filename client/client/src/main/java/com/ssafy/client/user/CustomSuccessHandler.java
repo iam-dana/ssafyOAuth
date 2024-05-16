@@ -62,7 +62,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
             // 성공 응답 설정 후 리다이렉트
             response.setStatus(HttpStatus.OK.value());
-            response.sendRedirect("http://localhost:8080");
+            response.sendRedirect("https://k10a306.p.ssafy.io/");
         } else {
             // 사용자가 존재하지 않는 경우, 회원가입 페이지로 리다이렉트
             response.setStatus(HttpStatus.OK.value());
