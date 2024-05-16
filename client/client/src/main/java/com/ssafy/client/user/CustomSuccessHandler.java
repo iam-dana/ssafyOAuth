@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     public final ApiService apiService;
-    private static final String RESOURCE_SERVER_URL = "http://localhost:8090/";
+    private static final String RESOURCE_SERVER_URL = "https://ssafyauth-resource.duckdns.org/";
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException, IOException {
         log.info("{} what is this", authentication.getPrincipal());
