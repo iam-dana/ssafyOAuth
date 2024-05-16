@@ -54,7 +54,7 @@
         function loadUserCount(teamSeq) {
             var token = getCookie("access_token")
             $.ajax({
-                url: 'https://ssafyauth-resource.duckdns.org/api/team'+teamSeq+'/count-user',
+                url: 'https://ssafyauth-resource.duckdns.org/api/team/'+teamSeq+'/count-user',
                 type: 'GET',
                 contentType: 'application/json',
                 headers: {
@@ -73,7 +73,7 @@
         function loadLoginCount(teamSeq) {
             var token = getCookie("access_token")
             $.ajax({
-                url: 'http://localhost:8090/api/team/'+teamSeq+'/count-login-user',
+                url: 'https://ssafyauth-resource.duckdns.org/'+teamSeq+'/count-login-user',
                 type: 'GET',
                 contentType: 'application/json',
                 headers: {

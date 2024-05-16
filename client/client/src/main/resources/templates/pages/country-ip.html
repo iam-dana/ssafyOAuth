@@ -127,7 +127,7 @@
         var token = getCookie("access_token")
         var teamSeq = [[${teamSeq}]];
         $.ajax({
-            url: `http://localhost:8090/api/team/${teamSeq}/country-ip`,
+            url: `https://ssafyauth-resource.duckdns.org/${teamSeq}/country-ip`,
             headers: {
                 "Authorization": 'Bearer ' + token
             },
