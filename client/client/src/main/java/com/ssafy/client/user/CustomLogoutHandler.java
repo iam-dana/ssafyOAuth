@@ -16,7 +16,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class CustomLogoutHandler implements LogoutHandler {
     private final LogoutOutService logoutOutService;
-    private static final String RESOURCE_SERVER_URL = "http://127.0.0.1:9000/oauth2/revoke";
+    private static final String RESOURCE_SERVER_URL = "https://ssafyauth-authorization.duckdns.org/oauth2/revoke";
     private final TokenService tokenService;
 
 

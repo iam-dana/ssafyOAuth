@@ -1,13 +1,14 @@
 package com.ssafy.client.user.config;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 import com.ssafy.client.user.CustomLogoutHandler;
+import com.ssafy.client.user.CustomOAuth2FailHandler;
+import com.ssafy.client.user.CustomSuccessHandler;
+import com.ssafy.client.user.service.CustomOAuth2UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -25,15 +26,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.ssafy.client.user.CustomOAuth2FailHandler;
-import com.ssafy.client.user.CustomSuccessHandler;
-// import com.ssafy.client.client.user.jwt.JWTFilter;
-// import com.ssafy.client.client.user.jwt.JWTUtil;
-import com.ssafy.client.user.jwt.JWTFilter;
-import com.ssafy.client.user.service.CustomOAuth2UserService;
-
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity

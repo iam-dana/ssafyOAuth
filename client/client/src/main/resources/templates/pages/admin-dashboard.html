@@ -54,7 +54,7 @@
         function loadAllUserCount() {
             var token = getCookie("access_token")
             $.ajax({
-                url: 'http://localhost:8090/user/count-user',
+                url: 'https://ssafyauth-resource.duckdns.org/user/count-user',
                 type: 'GET',
                 contentType: 'application/json',
                 headers: {
@@ -73,7 +73,7 @@
         function loadLoginAllCount() {
             var token = getCookie("access_token")
             $.ajax({
-                url: 'http://localhost:8090/api/team/'+'count-all-login-user',
+                url: 'https://ssafyauth-resource.duckdns.org/api/team/'+'count-all-login-user',
                 type: 'GET',
                 contentType: 'application/json',
                 headers: {
@@ -91,7 +91,7 @@
         function loadAllAbnormalLoginCount(teamSeq) {
             var token = getCookie("access_token")
             $.ajax({
-                url: 'http://localhost:8090/api/team/all-abnormal-login',
+                url: 'https://ssafyauth-resource.duckdns.org/api/team/all-abnormal-login',
                 type: 'GET',
                 contentType: 'application/json',
                 headers: {

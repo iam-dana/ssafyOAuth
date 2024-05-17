@@ -30,7 +30,7 @@ public class TokenExpirationFilter extends OncePerRequestFilter {
     private final TokenService tokenService;
     private final LogoutOutService logoutOutService;
     private final ClientRegistrationRepository clientRegistrationRepository;
-    private final String TOKEN_URL = "http://localhost:9000/oauth2/token";
+    private final String TOKEN_URL = "https://ssafyauth-authorization.duckdns.org/oauth2/token";
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
