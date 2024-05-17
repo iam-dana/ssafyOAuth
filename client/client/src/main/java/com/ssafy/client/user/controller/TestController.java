@@ -32,5 +32,9 @@ public class TestController {
         }
         return "index";
     }
+    @GetMapping("/custom-login")
+    public String customLoginPage(){
+        return "custom-login";
+    }
 
 }

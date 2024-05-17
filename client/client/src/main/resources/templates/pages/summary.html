@@ -176,9 +176,12 @@
                 </div>
             </div>
         </div>
-        <div class="footer" th:replace="~{layouts/footer :: footer}"></div>
     </div>
 </div>
+<div class="footer" th:replace="~{layouts/footer :: footer}"></div>
+
+
+
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -187,26 +190,7 @@
 <script th:src="@{/vendor/jquery-easing/jquery.easing.min.js}"></script>
 <script th:src="@{/js/sb-admin-2.min.js}"></script>
 <script th:inline="javascript">
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelector('.add-team-card').addEventListener('click', function () {
-            $('#teamAddModal').modal('show');
-        });
-    });
-
-    function updateTeamCount() {
-        var teamCount = document.getElementById('teamCount');
-        var currentCount = parseInt(teamCount.textContent.replace(/\D/g, ''));
-        teamCount.textContent = ` (${currentCount + 1})`;
-    }
-
-    function addInputField(groupId) {
-        var group = document.getElementById(groupId);
-        var inputGroup = group.querySelector('.input-group').cloneNode(true);
-        inputGroup.querySelector('input').value = '';
-        group.appendChild(inputGroup);
-    }
 </script>
-<link th:href="@{/js/sidebar.js}">
 </body>
 
 </html>
