@@ -21,6 +21,7 @@ public class ApiService {
     private RestTemplate restTemplate;
 
     public String callProtectedApi(String apiUrl) {
+
         return restTemplate.getForObject(apiUrl, String.class);
     }
 
