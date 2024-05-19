@@ -480,7 +480,7 @@
     function delete_member(email) {
         fetch(`http://localhost:8090/api/team/${teamSeq}/member/${email}/delete`, {
             method: 'POST',
-            headers: {'Authorization': `Bearer ${access_token}`},
+            headers: {'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json'},
         }).then(res => res.json()).then(data => {
             if(data.msg){
                 alert(data.msg);
