@@ -1,37 +1,36 @@
 package com.ssafy.client.user.config;
 
+import java.util.Arrays;
 import java.util.Collections;
 
+import com.ssafy.client.user.CustomLogoutHandler;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.CorsUtils;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.ssafy.client.user.CustomOAuth2FailHandler;
 import com.ssafy.client.user.CustomSuccessHandler;
 // import com.ssafy.client.client.user.jwt.JWTFilter;
 // import com.ssafy.client.client.user.jwt.JWTUtil;
 import com.ssafy.client.user.jwt.JWTFilter;
-import com.ssafy.client.user.jwt.JWTUtil;
 import com.ssafy.client.user.service.CustomOAuth2UserService;
-import com.ssafy.client.user.service.JWTService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -44,9 +43,9 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final CustomOAuth2FailHandler customOAuth2FailHandler;
-    private final JWTUtil jwtUtil;
-    private final JWTService jwtService;
+    private final CustomLogoutHandler customLogoutHandler;
 
+    private final TokenExpirationFilter tokenExpirationFilter;
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
@@ -54,110 +53,107 @@ public class SecurityConfig {
     }
 
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        //csrf disable
-        http
-                .csrf((auth) -> auth.disable());
+            //csrf disable
+            http
+                    .csrf((auth) -> auth.disable());
 
-        //로그인 방식 disable
-        http
-                .formLogin((auth) -> auth.disable());
+            //로그인 방식 disable
+            http
+                    .formLogin((auth) -> auth.disable());
 
-        //HTTP Basic 인증 방식 disable
-        http
-                .httpBasic((auth) -> auth.disable());
+            //HTTP Basic 인증 방식 disable
+            http
+                    .httpBasic((auth) -> auth.disable());
 
-        // //JWTFilter 추가
-        http
-                .addFilterBefore(new JWTFilter(jwtUtil, jwtService), UsernamePasswordAuthenticationFilter.class);
+            http.addFilterBefore(tokenExpirationFilter, UsernamePasswordAuthenticationFilter.class);
 
-
-        http.logout((logout) -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("https://localhost:8080")
-                .invalidateHttpSession(true)
-                .clearAuthentication(true)
-                .deleteCookies("access", "refresh")
-        );
+            http.logout((logout) -> logout
+                    .logoutUrl("/logout")
+                    .logoutSuccessUrl("/")
+                    .deleteCookies("JSESSIONID","access_token", "refresh_token")
+                    .invalidateHttpSession(true)
+                    .addLogoutHandler(customLogoutHandler)
+            );
 
 
-        //preflight 허용
-        http
-                .authorizeHttpRequests((request) -> request.requestMatchers(CorsUtils::isPreFlightRequest).permitAll());
+            http
+                    .authorizeHttpRequests((request) -> request.requestMatchers(CorsUtils::isPreFlightRequest).permitAll());
 
 
-        //oauth2
-        http
-                .oauth2Login((oauth2) -> oauth2
-                        .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
-                                .userService(customOAuth2UserService))
-                        .successHandler(customSuccessHandler)
-                        .failureHandler(customOAuth2FailHandler)
-                       // .authorizationEndpoint(e -> e.authorizationRequestRepository(oAuth2AuthorizationRequestRepository()))
-                );
+            //oauth2
+            http
 
-        //경로별 인가 작업
-        http
-                .authorizeHttpRequests((auth) -> auth
-                        // .requestMatchers("/nft/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
-                        // .requestMatchers("/users/name").permitAll()
-                        // .requestMatchers("/users").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
-                        .requestMatchers("users/**").permitAll()
-                        .anyRequest().authenticated());
+                    .oauth2Login((oauth2) -> oauth2
+                            .loginPage("/custom-login")
+                            .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
+                                    .userService(customOAuth2UserService))
+                            .successHandler(customSuccessHandler)
+                            .failureHandler(customOAuth2FailHandler)
+                    );
 
-        //세션 설정 : STATELESS
-        http
-                .sessionManagement((session) -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            //경로별 인가 작업
+            http
+                    .authorizeHttpRequests((auth) -> auth
+                            .requestMatchers("/custom-login","/api/**","/css/**", "/favicon.ico", "/error/**", "/image/**", "/vendor/**","users/**").permitAll()
+                            .anyRequest().authenticated());
 
-        http
+            //세션 설정 : STATELESS
+            http
+                    .sessionManagement((session) -> session
+                            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+
+            http
                 .cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
 
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-
+                        // CORS 설정 예시
+                        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                         CorsConfiguration configuration = new CorsConfiguration();
 
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:9000"));
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:8080"));
+                        // 모든 출처 허용
                         configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
-                        configuration.setAllowedMethods(Collections.singletonList("*"));
+                        // 모든 메소드 허용
+                        configuration.setAllowedMethods(
+                            Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+                        // 허용할 헤더 설정
+                        configuration.setAllowedHeaders(
+                            Arrays.asList("Authorization", "Cache-Control", "Content-Type", "Accept",
+                                "X-Requested-With", "remember-me"));
+                        // 브라우저가 응답에서 접근할 수 있는 헤더 설정
+                        configuration.setExposedHeaders(Arrays.asList("Set-Cookie", "Authorization"));
+                        // 자격 증명 허용 설정
                         configuration.setAllowCredentials(true);
-                        configuration.setAllowedHeaders(Collections.singletonList("*"));
+                        // 사전 요청의 캐시 시간(초) 설정
                         configuration.setMaxAge(3600L);
 
-                        configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
-                        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+                        // 모든 URL에 대해 CORS 설정 적용
+                        source.registerCorsConfiguration("/**", configuration);
 
                         return configuration;
                     }
                 }));
 
+            return http.build();
+        }
 
-        return http.build();
-    }
     @Bean
-    OAuth2AuthorizedClientManager authorizedClientManager(
+    public OAuth2AuthorizedClientManager authorizedClientManager(
             ClientRegistrationRepository clientRegistrationRepository,
             OAuth2AuthorizedClientRepository authorizedClientRepository) {
 
-        OAuth2AuthorizedClientProvider authorizedClientProvider =
-                OAuth2AuthorizedClientProviderBuilder.builder()
-                        .authorizationCode()
-                        .refreshToken()
-                        .build();
+        OAuth2AuthorizedClientProvider authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
+                .authorizationCode()
+                .refreshToken()
+                .build();
+
         DefaultOAuth2AuthorizedClientManager authorizedClientManager = new DefaultOAuth2AuthorizedClientManager(
                 clientRegistrationRepository, authorizedClientRepository);
         authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
 
         return authorizedClientManager;
     }
-    @Bean
-    HttpCookieOAuth2AuthorizationRequestRepository oAuth2AuthorizationRequestRepository() {
-        return new HttpCookieOAuth2AuthorizationRequestRepository();
-    }
-
-
 }

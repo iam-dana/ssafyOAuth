@@ -29,4 +29,14 @@ public class LoginStats {
 
 	@Field(type = FieldType.Boolean, name = "success")
 	private Boolean success;
+
+	public void isSuccess(boolean success){
+		this.success = success;
+	}
+
+	@Override
+	public String toString() {
+		return "LoginStats(userId=" + userId + ", teamId=" + teamId + ", createdAt=" + createdAt + ", success="+ success + ")\n";
+	}
+
 }
