@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>SSAFY Auth - Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/sb-admin-2.min.css}">
+    <link th:href="@{/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+    <!-- Other links for CSS and fonts -->
+</head>
+
+<body id="page-top" th:class="${bodyClass}">
+<div th:replace="~{layouts/header :: header}"></div>
+<!-- Page Wrapper -->
+<div id="wrapper">
+    <!-- Sidebar -->
+
+    <div class="header" th:replace="~{layouts/sidebar :: sidebar}"></div>
+
+    <div class="container-fluid">
+        <h1 class="h3 mb-4 text-gray-800">동의 항목</h1>
+
+        <div class="mb-4">
+            <button class="btn btn-success" type="button">심사 신청</button>
+        </div>
+
+        <h2>개인 정보</h2>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>항목</th>
+                <th>이름</th>
+                <th>ID</th>
+                <th>상태</th>
+                <th>관리</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>닉네임</td>
+                <td>PROFILE_NICKNAME</td>
+                <td>필수 항목!</td>
+                <td>Active</td>
+                <td>
+                    <button class="btn btn-primary">Manage</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

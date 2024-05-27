@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
@@ -55,6 +56,33 @@ public class EmailService {
 	public boolean certify(String userEmail, String userCode) {
 		String key = "AuthCode : " + userEmail;
 		String originCode = redisTemplate.opsForValue().get(key);
-		return userCode != null && userCode.equals(originCode);
+		if (userCode != null && userCode.equals(originCode)) {
+			redisTemplate.delete(key);
+			redisTemplate.opsForValue().set(userEmail, "true");
+			redisTemplate.expire(key, 180, TimeUnit.SECONDS);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public String sendTmpPassword(String userEmail) throws Exception {
+		String tmpPassword = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 10);
+		MimeMessage emailContent = emailSender.createMimeMessage();
+		MimeMessageHelper helper;
+
+		helper = new MimeMessageHelper(emailContent, true);
+		helper.setSubject("SSAFYAuth 인증번호 안내");
+		helper.setFrom(new InternetAddress(emailSenderAddress, "SSAFYAuth", "UTF-8"));
+		helper.setTo(userEmail);
+
+		Context context = new Context();
+		context.setVariable("tmpPassword", tmpPassword);
+
+		String html = templateEngine.process("pages/tmpmail", context);
+		helper.setText(html, true);
+
+		emailSender.send(emailContent);
+		return tmpPassword;
 	}
 }

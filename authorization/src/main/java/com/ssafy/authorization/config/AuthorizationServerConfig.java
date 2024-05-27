@@ -1,40 +1,59 @@
 package com.ssafy.authorization.config;
 
-import static org.springframework.security.config.Customizer.*;
-
-import java.util.UUID;
-
+import com.ssafy.authorization.filter.CustomUsernamePasswordAuthenticationFilter;
+import com.ssafy.authorization.member.model.domain.Member;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcOperations;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.SqlParameterValue;
+import org.springframework.jdbc.support.lob.DefaultLobHandler;
+import org.springframework.jdbc.support.lob.LobHandler;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.oidc.OidcScopes;
-import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
-import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
-import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
-import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
-import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
-import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.CorsUtils;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 public class AuthorizationServerConfig {
+
+
+	private final CustomUsernamePasswordAuthenticationFilter customUsernamePasswordAuthenticationFilter;
+	@Autowired
+	public AuthorizationServerConfig(CustomUsernamePasswordAuthenticationFilter customUsernamePasswordAuthenticationFilter) {
+
+		this.customUsernamePasswordAuthenticationFilter = customUsernamePasswordAuthenticationFilter;
+	}
 
 	@Bean
 	@Order(1)
@@ -43,8 +62,10 @@ public class AuthorizationServerConfig {
 		OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 		http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
 			.authorizationEndpoint(auth -> auth
-				.consentPage("/oauth2/consent"));
-		//				.oidc(withDefaults());
+				.consentPage("/oauth2/consent"))
+				.oidc(withDefaults());
+
+
 		http
 			.exceptionHandling((exceptions) -> exceptions
 				.defaultAuthenticationEntryPointFor(
@@ -59,78 +80,110 @@ public class AuthorizationServerConfig {
 	}
 
 
+
 	@Bean
 	@Order(2)
-	SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
-			throws Exception {
+	SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager)
+		throws Exception {
+		// customUsernamePasswordAuthenticationFilter.setCustomAuthenticationManager(authenticationManager);
+
 		http.csrf(csrf -> csrf.disable());
+
+
 		http
-				.authorizeHttpRequests((authorize) -> authorize
-						.requestMatchers("/css/**", "/favicon.ico", "/error","/image/**","/vendor/**",
-							"/test/**","/login","/signup", "/sendemail","/certify","/forgot_password","/forgot_user","/find_user"
-							,".well-known/jwks.json").permitAll()
-						.anyRequest().authenticated()
-				)
-				.formLogin(formLogin -> formLogin
-						.loginPage("/login")
-				);
-		
+			.authorizeHttpRequests((request) -> request.requestMatchers(CorsUtils::isPreFlightRequest).permitAll());
+		http
+			.cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
+
+				@Override
+				public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+					// CORS 설정 예시
+					UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+					CorsConfiguration configuration = new CorsConfiguration();
+
+					// 모든 출처 허용
+					configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
+					// 모든 메소드 허용
+					configuration.setAllowedMethods(
+						Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+					// 허용할 헤더 설정
+					configuration.setAllowedHeaders(
+						Arrays.asList("Authorization", "Cache-Control", "Content-Type", "Accept",
+							"X-Requested-With", "remember-me"));
+					// 브라우저가 응답에서 접근할 수 있는 헤더 설정
+					configuration.setExposedHeaders(Arrays.asList("Set-Cookie", "Authorization"));
+					// 자격 증명 허용 설정
+					configuration.setAllowCredentials(true);
+					// 사전 요청의 캐시 시간(초) 설정
+					configuration.setMaxAge(3600L);
+
+					// 모든 URL에 대해 CORS 설정 적용
+					source.registerCorsConfiguration("/**", configuration);
+
+					return configuration;
+				}
+			}));
+		http
+			.authorizeHttpRequests((authorize) -> authorize
+				.requestMatchers("/js/**","/api/auth/**", "/css/**", "/favicon.ico", "/error","/image/**","/vendor/**",
+					"/test/**","/login","/signup", "/sendemail","/certify","/forgot_password","/forgot_user","/find_user"
+					,".well-known/jwks.json","/login_stats/**","/api/ttt/*").permitAll()
+				.requestMatchers("/ws").permitAll()
+				.anyRequest().authenticated()
+			)
+			.formLogin(formLogin -> formLogin
+				.loginPage("/login")
+			);
+
+		http.addFilterBefore(customUsernamePasswordAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+
 		return http.build();
+
 	}
-	
+
+
+
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+		return authenticationConfiguration.getAuthenticationManager();
+	}
+
 	@Bean
 	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
-
 	@Bean
-	RegisteredClientRepository jdbcRegisteredClientRepository(JdbcTemplate template) {
-		return new JdbcRegisteredClientRepository(template);
+	public LobHandler lobHandler() {
+		return new DefaultLobHandler();
 	}
 
 	@Bean
-	OAuth2AuthorizationService jdbcOAuth2AuthorizationService(
-		JdbcOperations jdbcOperations,
-		RegisteredClientRepository registeredClientRepository) {
-
-		RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
-			.clientId("client")
-			.clientName("client")
-			.clientSecret(passwordEncoder().encode("secret"))
-			.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-			.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
-			.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-			.authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-			.authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-			.redirectUri("http://localhost:8080/login/oauth2/code/client")
-			.postLogoutRedirectUri("http://localhost:8080/logged-out")
-			.scope(OidcScopes.OPENID)
-			.scope(OidcScopes.PROFILE)
-			.scope("read")
-			.scope("write")
-			.clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
-			.build();
-
-		RegisteredClient deviceClient = RegisteredClient.withId(UUID.randomUUID().toString())
-			.clientId("device-client")
-			.clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
-			.authorizationGrantType(AuthorizationGrantType.DEVICE_CODE)
-			.authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-			.scope("message.read")
-			.scope("message.write")
-			.build();
-
-		//			 registeredClientRepository.save(registeredClient);
-		//			 registeredClientRepository.save(deviceClient);
-
-		return new JdbcOAuth2AuthorizationService(jdbcOperations, registeredClientRepository);
+	public RowMapper<OAuth2Authorization> authorizationRowMapper(RegisteredClientRepository registeredClientRepository) {
+		return new TestOauth2ServiceImpl.OAuth2AuthorizationRowMapper(registeredClientRepository);
 	}
 
 	@Bean
-	OAuth2AuthorizationConsentService jdbcOAuth2AuthorizationConsentService(
-		JdbcOperations jdbcOperations,
-		RegisteredClientRepository registeredClientRepository) {
-		return new JdbcOAuth2AuthorizationConsentService(jdbcOperations, registeredClientRepository);
+	public Function<OAuth2Authorization, List<SqlParameterValue>> authorizationParametersMapper() {
+		return new TestOauth2ServiceImpl.OAuth2AuthorizationParametersMapper();
 	}
+
+	@Bean
+	public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer(UserDetailsService userDetailsService) {
+		return (context) -> {
+			OAuth2TokenType tokenType = context.getTokenType();
+			if (OAuth2TokenType.ACCESS_TOKEN.equals(tokenType)) {
+				String username = context.getPrincipal().getName();
+				Member user = (Member) userDetailsService.loadUserByUsername(username);
+				context.getClaims().issuedAt(Instant.now());
+				// 2 hour expiry time for access token
+				context.getClaims().expiresAt(Instant.now().plusSeconds(7200));
+			} else if (OAuth2TokenType.REFRESH_TOKEN.equals(tokenType)) {
+				// 10 days expiry time for refresh token
+				context.getClaims().expiresAt(Instant.now().plusSeconds(864000));
+			}
+		};
+	}
+
 
 }

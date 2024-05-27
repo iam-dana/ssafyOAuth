@@ -34,6 +34,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
 
     // JMX를 사용하기 위한 의존성
     implementation 'org.springframework:spring-context'
@@ -66,6 +68,7 @@ dependencies {
     // mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
+
 
     implementation 'org.springframework.security:spring-security-cas'
 }
